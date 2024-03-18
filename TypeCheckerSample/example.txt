@@ -1,0 +1,6 @@
+float(float float, float x, x float)
+{
+	int x;
+	float float;
+	float if;
+}
