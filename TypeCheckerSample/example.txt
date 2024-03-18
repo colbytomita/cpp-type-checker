@@ -1,6 +1,7 @@
-float(float float, float x, x float)
+main()
 {
 	int x;
+	float x;
+	float x;
 	float float;
-	float if;
 }

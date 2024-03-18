@@ -498,12 +498,11 @@ Type ASTProgram::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 
 			if (types[j] == "float")
 			{
-				string name = names[j];
 				// check if name is a keyword
-				if (find(keywords.begin(), keywords.end(), name) != keywords.end())
+				if (find(keywords.begin(), keywords.end(), names[j]) != keywords.end())
 				{
 					bool hadErrorB = false;
-					typeError("T_Function06", functions[i]->getLine(), "Variable \"" + name + "\" is a keyword", hadError);
+					typeError("T_Function06", functions[i]->getLine(), "Variable \"" + names[j] + "\" is a keyword", hadErrorB);
 					hadError = hadError || hadErrorB;
 				}
 				//please note the weird syntax here, calling the [] operator as if it is the function.
@@ -521,12 +520,11 @@ Type ASTProgram::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 			}
 			else if (types[j] == "bool")
 			{
-				string name = names[j];
 				// check if name is a keyword
-				if (find(keywords.begin(), keywords.end(), name) != keywords.end())
+				if (find(keywords.begin(), keywords.end(), names[j]) != keywords.end())
 				{
 					bool hadErrorB = false;
-					typeError("T_Function06", functions[i]->getLine(), "Variable \"" + name + "\" is a keyword", hadError);
+					typeError("T_Function06", functions[i]->getLine(), "Variable \"" + names[j] + "\" is a keyword", hadErrorB);
 					hadError = hadError || hadErrorB;
 				}
 				//please note the weird syntax here, calling the [] operator as if it is the function.
@@ -580,13 +578,17 @@ Type ASTProgram::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 
 Type ASTStatements::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 {
-	
+	for(int i = 0; i < statements.size(); i++)
+	{
+		statements[i]->typeCheck(map, fmap, hadError);
+	}
 	return Type::NULL_T;
 }
 
 
 Type ASTStatement::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 {
+	statement->typeCheck(map, fmap, hadError);
 	return Type::NULL_T;
 }
 
