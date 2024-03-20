@@ -550,13 +550,13 @@ Type ASTProgram::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 		if(fmap->find(functions[i]->getName()) != fmap->end()){
 			// throw an error for an already defined function name
 			bool hadErrorB = false;
-			typeError("T_function05", functions[i]->getLine(), "Function \"" + name + "\" is already defined", hadError);
+			typeError("T_function05", getLine(), "Function \"" + name + "\" is already defined", hadError);
 			hadError = hadError || hadErrorB;
 		}
 		else if (name == "if" || name == "while" || name == "float" || name == "bool" || name == "TRUE" || name == "FALSE")
 		{
 			bool hadErrorB = false;
-			typeError("T_function04", getLine(), "\"" + name + "\" keyword cannot be used as a function name", hadErrorB);
+			typeError("T_function04", functions[i]->getLine(), "\"" + name + "\" keyword cannot be used as a function name", hadErrorB);
 			hadError = hadError || hadErrorB;
 		}
 		else
@@ -602,7 +602,44 @@ Type ASTElement::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 
 Type ASTDeclaration::typeCheck(TypeMap* m, FunctionParamMap* fmap, bool& hadError)
 {
-	
+	// check if valid types (string, float)
+	vector<string> validTypes = {"string", "float"};
+	if (find(validTypes.begin(), validTypes.end(), type) == validTypes.end())
+	{
+		bool hadErrorB = false;
+		typeError("T_Declaration01", getLine(), "Type \"" + type + "\" undefined", hadErrorB);
+		hadError = hadError || hadErrorB;
+	}
+	// need to check if the variable name already exists in the function or in the parameters
+	else if (m->find(name) != m->end())
+	{
+		bool hadErrorB = false;
+		typeError("T_Declaration02", getLine(), "Variable \"" + name + "\" is already defined", hadErrorB);
+		hadError = hadError || hadErrorB;
+	}
+	else
+	{
+		// check if the value is a float
+		if (val != NULL)
+		{
+			Type valType = val->typeCheck(m, fmap, hadError);
+			if (valType != FLOAT_T)
+			{
+				bool hadErrorB = false;
+				typeError("T_Declaration03", getLine(), "Variable \"" + name + "\" is of type \"" + type + "\" but is being assigned a value of type \"" + typeToString(valType) + "\"", hadErrorB);
+				hadError = hadError || hadErrorB;
+			}
+		}
+		// add the variable to the map
+		if (type == "float")
+		{
+			(*m)[name] = FLOAT_T;
+		}
+		else if (type == "bool")
+		{
+			(*m)[name] = BOOL_T;
+		}
+	}
 	return Type::NULL_T;
 }
 

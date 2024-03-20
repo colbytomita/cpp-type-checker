@@ -5,3 +5,14 @@ main()
 	float x;
 	float float;
 }
+
+float(float float, float float)
+{
+   	boolean x = (true);
+   	float x;
+   	float x;
+}
+
+test(float y) {
+	float y;
+}
