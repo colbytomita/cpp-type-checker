@@ -3,7 +3,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <algorithm>
 using namespace std;
 
 //this part is the functions for creating the tree
@@ -18,7 +17,7 @@ void ASTFunction::setName(string name_in)
 	name = name_in;
 }
 
-void ASTFunction::setParam(ASTParam* theParam)
+void ASTFunction::setParam(ASTParam * theParam)
 {
 	params = theParam;
 }
@@ -44,7 +43,7 @@ void ASTStatement::setStatement(ASTNode* statementin)
 	statement = statementin;
 }
 
-ASTNode* ASTStatement::getStatement()
+ASTNode * ASTStatement::getStatement()
 {
 	return statement;
 }
@@ -113,11 +112,11 @@ void ASTDeclaration::setName(string in)
 
 void ASTDeclaration::setType(string in)
 {
-
+	
 	type = in;
 }
 
-void ASTDeclaration::setVal(ASTNode* in)
+void ASTDeclaration::setVal(ASTNode * in)
 {
 	val = in;
 }
@@ -215,7 +214,7 @@ void ASTProgram::print(int depth)
 	{
 		functions[i]->print(0);
 
-		if (i != functions.size() - 1)
+		if(i!= functions.size() -1 ) 
 			cout << "\n";
 	}
 }
@@ -302,7 +301,7 @@ void ASTIf::print(int depth)
 
 
 	ASTStatement* stmt = (ASTStatement*)statement;
-
+	
 	if (typeid(*(stmt->getStatement())) == typeid(ASTBlockStatement))
 	{
 		statement->print(depth);
@@ -313,12 +312,12 @@ void ASTIf::print(int depth)
 	}
 
 
-
+	
 }
 
 void ASTAssign::print(int depth)
 {
-
+	
 
 	for (int i = 0; i < depth; i++)
 	{
@@ -383,7 +382,7 @@ void ASTBooleanExprA::print(int depth)
 	operands[0]->print(depth);
 	for (int i = 1; i < operands.size(); i++)
 	{
-		cout << " " << operators[i - 1] << " ";
+		cout <<" "<<operators[i - 1]<<" ";
 		operands[i]->print(depth);
 	}
 }
@@ -442,6 +441,11 @@ void ASTElement::print(int depth)
 	cout << value;
 }
 
+vector<ASTNode *> ASTArgs::getArgs()
+{
+	return args;
+}
+
 
 
 void typeError(string code, int line, string message, bool& hasError)
@@ -467,12 +471,6 @@ string typeToString(Type t)
 	return "Unknown type";
 }
 
-bool isKeyword(string s)
-{
-	vector<string> keywords = {"if", "while", "float", "bool", "TRUE", "FALSE"};
-	return find(keywords.begin(), keywords.end(), s) != keywords.end();
-}
-
 //ths function only
 Type ASTFunction::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 {
@@ -484,12 +482,13 @@ Type ASTFunction::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError
 Type ASTProgram::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 {
 	fmap = new FunctionParamMap();
-	vector<string> keywords = {"if", "while", "float", "bool", "TRUE", "FALSE"};
+
+	
 
 	for (int i = 0; i < functions.size(); i++)
 	{
 		//create map
-		TypeMap* m = new TypeMap();
+		TypeMap * m = new TypeMap();
 
 		//add the params in
 		ASTParam* params = functions[i]->getParams();
@@ -504,11 +503,11 @@ Type ASTProgram::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 
 			if (types[j] == "float")
 			{
-				// check if name is a keyword
-				if (isKeyword(names[j]))
+				string name = names[j];
+				if (name == "if" || name == "while" || name == "float" || name == "bool" || name == "TRUE" || name == "FALSE")
 				{
 					bool hadErrorB = false;
-					typeError("T_Function06", functions[i]->getLine(), "Variable \"" + names[j] + "\" is a keyword", hadErrorB);
+					typeError("T_function06", functions[i]->getLine(), "\"" + name + "\" keyword cannot be used as a function parameter name", hadErrorB);
 					hadError = hadError || hadErrorB;
 				}
 				//please note the weird syntax here, calling the [] operator as if it is the function.
@@ -526,11 +525,11 @@ Type ASTProgram::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 			}
 			else if (types[j] == "bool")
 			{
-				// check if name is a keyword
-				if (isKeyword(names[j]))
+				string name = names[j];
+				if (name == "if" || name == "while" || name == "float" || name == "bool" || name == "TRUE" || name == "FALSE")
 				{
 					bool hadErrorB = false;
-					typeError("T_Function06", functions[i]->getLine(), "Variable \"" + names[j] + "\" is a keyword", hadErrorB);
+					typeError("T_function07", functions[i]->getLine(), "\"" + name + "\" keyword cannot be used as a function parameter name", hadErrorB);
 					hadError = hadError || hadErrorB;
 				}
 				//please note the weird syntax here, calling the [] operator as if it is the function.
@@ -553,15 +552,17 @@ Type ASTProgram::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 		}
 
 		string name = functions[i]->getName();
-		if(fmap->find(functions[i]->getName()) != fmap->end()){
-			// throw an error for an already defined function name
-			bool hadErrorB = false;
-			typeError("T_function05", getLine(), "Function \"" + name + "\" is already defined", hadError);
-			hadError = hadError || hadErrorB;
-		}
-		else if (isKeyword(name))
+
+		//see if function already exists
+		if (fmap->find(functions[i]->getName()) != fmap->end())
 		{
 			bool hadErrorB = false;
+			typeError("T_function05", functions[i]->getLine(), "\"" + name + "\" already defined", hadErrorB);
+			hadError = hadError || hadErrorB;
+		}
+		else if (name == "if" || name == "while" || name == "float" || name == "bool" || name == "TRUE" || name == "FALSE")
+		{
+			bool hadErrorB=false;
 			typeError("T_function04", functions[i]->getLine(), "\"" + name + "\" keyword cannot be used as a function name", hadErrorB);
 			hadError = hadError || hadErrorB;
 		}
@@ -581,114 +582,143 @@ Type ASTProgram::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 	return Type::NULL_T;
 }
 
-
+//must check all the statements
 Type ASTStatements::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 {
-	for(int i = 0; i < statements.size(); i++)
+	for (int i = 0; i < statements.size(); i++)
 	{
 		statements[i]->typeCheck(map, fmap, hadError);
 	}
 	return Type::NULL_T;
 }
 
-
+//must check its statement
 Type ASTStatement::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 {
-	statement->typeCheck(map, fmap, hadError);
+	bool newHasError = false;
+	statement->typeCheck(map, fmap, newHasError);
+	hadError = hadError || newHasError;
 	return Type::NULL_T;
 }
 
-
+//must check if valid variable, valid bool constant (TRUE or FALSE) or number and return the corresponding type
 Type ASTElement::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 {
 	if (isFloat)
 	{
 		return Type::FLOAT_T;
 	}
-	// at this point, the value should be a string, either a variable or a boolean
-	// i need to check if the value is not any of these I should print that the value is undefined
-	else if (map->find(value) != map->end())
-	{
-		return map->operator[](value);
-	}
-	else if (value == "TRUE" || value == "FALSE")
+	else if(value == "TRUE" || value == "FALSE")
 	{
 		return Type::BOOL_T;
 	}
 	else
 	{
-		bool hadErrorB = false;
-		typeError("T_Element01", getLine(), "Variable \"" + value + "\" is not defined", hadErrorB);
-		hadError = hadError || hadErrorB;
-	}
-	return Type::NULL_T;
-}
-
-
-Type ASTDeclaration::typeCheck(TypeMap* m, FunctionParamMap* fmap, bool& hadError)
-{
-	Type valType = val!= NULL ? val->typeCheck(m, fmap, hadError) : NULL_T;
-	// left side checks
-	// check if valid types (string, float a.k.a. bool, float)
-	vector<string> validTypes = {"bool", "float"};
-	bool isValidType = true;
-	if (find(validTypes.begin(), validTypes.end(), type) == validTypes.end())
-	{
-		isValidType = false;
-		bool hadErrorB = false;
-		typeError("T_Declaration01", getLine(), "Type \"" + type + "\" undefined", hadErrorB);
-		hadError = hadError || hadErrorB;
-	}
-	else if(isKeyword(name))
-	{
-		bool hadErrorB = false;
-		typeError("T_Declaration02", getLine(), "Variable \"" + name + "\" is a keyword", hadErrorB);
-		hadError = hadError || hadErrorB;
-	}
-	// need to check if the variable name already exists in the function or in the parameters
-	else if (m->find(name) != m->end())
-	{
-		bool hadErrorB = false;
-		typeError("T_Declaration03", getLine(), "Variable \"" + name + "\" is already defined", hadErrorB);
-		hadError = hadError || hadErrorB;
-	}
-	else {
-		// add it to the map
-		(*m)[name] = isValidType ? (type == "float" ? FLOAT_T : BOOL_T) : NULL_T;
-		// left side is good so check type mismatch
-		if (isValidType && valType != NULL_T)
+		if (map->operator[](value) == NULL_T) //in this case null_t is 0 so that is what will be returned if it is empty.
 		{
-			if (type == "float" && valType == FLOAT_T) {
-				// add the variable to the map
-				(*m)[name] = FLOAT_T;
-			}
-			else if (type == "bool" && valType == BOOL_T) {
-				// add the variable to the map
-				(*m)[name] = BOOL_T;
-			}
-			else {
-				bool hadErrorB = false;
-				typeError("T_Declaration04", getLine(), "Type mismatch: expected " + type + ", got " + typeToString(valType), hadErrorB);
-				hadError = hadError || hadErrorB;
-			}
+			typeError("T_element01", getLine(), "Variable \"" + value + "\" is not defined", hadError);
+
+		}
+		else
+		{
+			return map->operator[](value);
 		}
 	}
 	return Type::NULL_T;
 }
 
-
-Type ASTFactor::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
+//must verify the types is valid, verify variable not used (and add the variable to the type map not used), then (possibly) verify the left and right sides are the same.
+//variables names cannot be a keyword
+Type ASTDeclaration::typeCheck(TypeMap* m, FunctionParamMap* fmap, bool& hadError)
 {
-	if (boolExpr != nullptr)
+	Type t = ERROR_T;
+
+	Type right = NULL_T;
+
+	if (val != 0)
 	{
-		// cout << "factor bool expr type: " << boolExpr->typeCheck(map, fmap, hadError) << endl;
-		return boolExpr->typeCheck(map, fmap, hadError);
+		right = val->typeCheck(m, fmap, hadError);
+	}
+
+	
+	bool nameError = false;
+	bool hadErrorB = false;
+	if (name == "if" || name == "while" || name == "float" || name == "bool" || name == "TRUE" || name == "FALSE")
+	{
+		nameError = true;
+		typeError("T_dec05", getLine(), "\"" + name + "\" keyword cannot be used as a variable name", hadErrorB);
+		hadError = hadError || hadErrorB;
+	}
+	if (type == "float")
+	{
+		//please note the weird syntax here, calling the [] operator as if it is the function.
+		if (m->operator[](name) == NULL_T && !nameError) //in this case null_t is 0 so that is what will be returned if it is empty.
+		{
+			//we good since it is not prev defined!
+			m->operator[](name) = FLOAT_T;
+			t = FLOAT_T;
+		}
+		else if(!nameError)
+		{
+			hadErrorB = false;
+			//already defined...
+			typeError("T_dec01", getLine(), "Variable \"" + name + "\" is already defined", hadErrorB);
+			hadError = hadError || hadErrorB;
+		}
+	}
+	else if (type == "bool")
+	{
+		//please note the weird syntax here, calling the [] operator as if it is the function.
+		if (m->operator[](name) == NULL_T && !nameError) //in this case null_t is 0 so that is what will be returned if it is empty.
+		{
+			//we good since it is not prev defined!
+			m->operator[](name) = BOOL_T;
+			t = BOOL_T;
+		}
+		else if (!nameError)
+		{
+			hadErrorB = false;
+			//already defined...
+			typeError("T_dec02", getLine(), "Variable \"" + name + "\" is already defined", hadErrorB);
+			hadError = hadError || hadErrorB;
+		}
 	}
 	else
 	{
-		// cout << "factor element type: " << element->typeCheck(map, fmap, hadError) << endl;
-		return element->typeCheck(map, fmap, hadError);
+		hadErrorB = false;
+		typeError("T_dec03", getLine(), "Type \"" + type + "\" undefined", hadErrorB);
+		hadError = hadError || hadErrorB;
 	}
+
+
+	if (t == BOOL_T || t == FLOAT_T)
+	{
+		if (right != NULL_T && right != ERROR_T)
+		{
+			if (t != right)
+			{
+				typeError("T_dec04", getLine(), "Left and right sides of declaration do not agree. Left is \"" + typeToString(t) + "\". Right is \""+ typeToString(right)+"\"", hadError);
+			}
+		}
+	}
+	
+
+
+	return Type::NULL_T;
+}
+
+//returns the check of the element or the expression
+Type ASTFactor::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
+{
+	if (element != 0)
+	{
+		return element->typeCheck(map,  fmap, hadError);
+	}
+	else
+	{
+		return boolExpr->typeCheck(map, fmap, hadError);
+	}
+
 	return Type::NULL_T;
 }
 
@@ -723,6 +753,9 @@ Type ASTBooleanExprA::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadE
 {
 	return operands[0]->typeCheck(map, fmap, hadError);
 }
+
+
+
 Type ASTBooleanExprB::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 {
 	return operands[0]->typeCheck(map, fmap, hadError);
@@ -733,7 +766,9 @@ Type ASTTerm::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 }
 Type ASTExpr::typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError)
 {
+
 	return operands[0]->typeCheck(map, fmap, hadError);
+
 }
 
 

@@ -1,7 +1,10 @@
-funcTwo(float a, bool b, float c, bool d)
+funcThree()
 {
-        float a;
-        bool b;
-        bool c;
-        float d;
+        float float;
+        bool float;
+        float bool = float;
+        bool x = float;
+        float y = bool;
+        bool z = y;
+        float a = x;
 }

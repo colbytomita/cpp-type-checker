@@ -113,6 +113,8 @@ public:
 	void addArg(ASTNode* theNode);
 	void print(int depth);
 	Type typeCheck(TypeMap* map, FunctionParamMap* fmap, bool& hadError);
+
+	vector<ASTNode*> getArgs();
 private:
 	vector<ASTNode*> args;
 };
